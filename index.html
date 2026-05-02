@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WPS">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#0a0c0f">
+<meta name="description" content="Walsh Performance System">
+<title>Walsh Performance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c0f;--surface:#111418;--surface2:#181c22;--border:#222830;--accent:#e8ff47;--accent2:#ff6b35;--cold:#4db8ff;--heat:#ff7a3d;--rl:#ff4444;--green:#4ade80;--yellow:#fbbf24;--red:#f87171;--purple:#c4b5fd;--text:#f0f2f5;--muted:#6b7280;--dim:#374151;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;padding-top:env(safe-area-inset-top);}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,12,15,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;height:52px;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);letter-spacing:2px;margin-right:24px;white-space:nowrap;}
+.nav-tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:0 12px;height:52px;display:flex;align-items:center;font-size:11px;font-weight:500;letter-spacing:0.6px;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;text-transform:uppercase;white-space:nowrap;transition:all 0.2s;}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+main{max-width:1100px;margin:0 auto;padding:28px 18px 80px;}
+.page{display:none;}
+.page.active{display:block;}
+.page-header{margin-bottom:26px;}
+.page-header h1{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:3px;line-height:1;}
+.page-header h1 span{color:var(--accent);}
+.page-header p{color:var(--muted);margin-top:6px;font-size:13px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:14px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:680px){.grid-2{grid-template-columns:1fr;}}
+.stat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;flex:1;min-width:100px;}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.stat-value{font-family:'DM Mono',monospace;font-size:20px;color:var(--text);margin-top:2px;}
+.stat-value.accent{color:var(--accent);}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+@media(max-width:700px){.week-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:400px){.week-grid{grid-template-columns:1fr;}}
+.day-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 11px;cursor:pointer;transition:border-color 0.2s;}
+.day-card:hover{border-color:var(--accent);}
+.day-card.expanded{border-color:var(--accent);}
+.day-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:var(--accent);}
+.day-type{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;line-height:1.3;}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;margin:2px 2px 2px 0;}
+.p-train{background:rgba(232,255,71,0.1);color:var(--accent);border:1px solid rgba(232,255,71,0.3);}
+.p-cold{background:rgba(77,184,255,0.1);color:var(--cold);border:1px solid rgba(77,184,255,0.3);}
+.p-heat{background:rgba(255,122,61,0.1);color:var(--heat);border:1px solid rgba(255,122,61,0.3);}
+.p-rl{background:rgba(255,68,68,0.1);color:var(--rl);border:1px solid rgba(255,68,68,0.3);}
+.p-sleep{background:rgba(196,181,253,0.1);color:var(--purple);border:1px solid rgba(196,181,253,0.3);}
+.p-rest{background:rgba(107,114,128,0.1);color:var(--muted);border:1px solid rgba(107,114,128,0.3);}
+.p-surf{background:rgba(147,197,253,0.1);color:#93c5fd;border:1px solid rgba(147,197,253,0.3);}
+.day-detail{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7;}
+.day-detail.show{display:block;}
+.day-detail strong{color:var(--text);display:block;margin-top:8px;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:0.6px;}
+.day-detail ul{padding-left:13px;}
+.day-detail li{margin-bottom:2px;}
+.proto-table{width:100%;border-collapse:collapse;font-size:13px;}
+.proto-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);font-weight:500;}
+.proto-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text);}
+.proto-table tr:last-child td{border-bottom:none;}
+.proto-table tr:hover td{background:var(--surface2);}
+.proto-table td:first-child{color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;}
+.equip-row{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+.equip-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.equip-name{font-weight:600;font-size:13px;color:var(--text);}
+.equip-spec{font-size:12px;color:var(--muted);line-height:1.5;}
+.hbox{background:rgba(232,255,71,0.05);border:1px solid rgba(232,255,71,0.15);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.6;margin-bottom:9px;}
+.hbox strong{color:var(--accent);}
+.nbox{background:rgba(255,122,61,0.06);border:1px solid rgba(255,122,61,0.18);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px;}
+.nbox strong{color:var(--heat);}
+.lbox{background:var(--surface2);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;padding:13px 15px;margin-bottom:8px;}
+.lbox h4{font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;}
+.lbox p,.lbox li{font-size:13px;color:var(--muted);line-height:1.6;}
+.lbox ul{padding-left:15px;}
+.rbox{background:var(--surface2);border-left:3px solid var(--accent2);border-radius:0 8px 8px 0;padding:13px 15px;margin-bottom:8px;}
+.rbox-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent2);line-height:1;}
+.rbox-title{font-weight:600;font-size:14px;margin:2px 0;}
+.rbox-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.whoop-row{display:flex;gap:12px;margin-bottom:14px;}
+.wbadge{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;flex-shrink:0;}
+.wg{background:rgba(74,222,128,0.12);color:var(--green);border:2px solid var(--green);}
+.wy{background:rgba(251,191,36,0.12);color:var(--yellow);border:2px solid var(--yellow);}
+.wr{background:rgba(248,113,113,0.12);color:var(--red);border:2px solid var(--red);}
+.wtext h4{font-size:13px;font-weight:600;margin-bottom:2px;}
+.wtext p{font-size:12px;color:var(--muted);line-height:1.5;}
+.section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.phase-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;margin:10px 0;gap:2px;}
+.ps{flex:1;border-radius:2px;}
+.ps.active{background:var(--accent);}
+.ps.done{background:var(--dim);}
+.ps.future{background:var(--surface2);border:1px solid var(--border);}
+.phase-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* ── LOG ── */
+.log-form{display:grid;gap:12px;}
+.log-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.log-row{grid-template-columns:1fr;}}
+label.form-label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);display:block;margin-bottom:4px;}
+input[type=date],input[type=number],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;-webkit-appearance:none;}
+input[type=date]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:var(--accent);}
+input[type=range]{width:100%;accent-color:var(--accent);}
+select option{background:var(--surface2);}
+.check-row{display:flex;flex-wrap:wrap;gap:7px;}
+/* FIX: checkboxes use button elements to avoid label nesting issues */
+.check-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 11px;cursor:pointer;transition:all 0.15s;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;user-select:none;}
+.check-btn:hover{border-color:var(--muted);}
+.check-btn.checked{background:rgba(232,255,71,0.1);border-color:rgba(232,255,71,0.45);color:var(--accent);}
+.check-btn .cb-icon{font-size:14px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-primary{background:var(--accent);color:#0a0c0f;}
+.btn-primary:hover{background:#d4eb3a;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--text);color:var(--text);}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(248,113,113,0.3);font-size:11px;padding:5px 10px;}
+.btn-danger:hover{background:rgba(248,113,113,0.1);}
+.log-entry{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;}
+.log-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);white-space:nowrap;min-width:68px;}
+.log-content{flex:1;}
+.log-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.log-score{font-family:'Bebas Neue',sans-serif;font-size:20px;min-width:34px;text-align:right;}
+.sg{color:var(--green);}.sy{color:var(--yellow);}.sr{color:var(--red);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+
+/* ── WEEKLY SUMMARY ── */
+.progress-bar-wrap{background:var(--surface2);border-radius:6px;height:10px;overflow:hidden;margin-top:6px;}
+.progress-bar-fill{height:100%;border-radius:6px;transition:width 0.5s ease;}
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.metric-row:last-child{border-bottom:none;}
+.metric-name{font-size:13px;color:var(--text);}
+.metric-count{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent);}
+.week-nav{display:flex;gap:8px;align-items:center;margin-bottom:16px;}
+.week-nav button{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;}
+.week-nav button:hover{border-color:var(--accent);color:var(--accent);}
+.week-nav .wk-label{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);flex:1;text-align:center;}
+.trend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:40px;}
+.spark-bar{flex:1;border-radius:3px 3px 0 0;min-width:6px;transition:height 0.3s;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.page.active .card{animation:fadeUp 0.25s ease both;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">WPS</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('overview',this)">Overview</button>
+    <button class="nav-tab" onclick="showPage('week',this)">Weekly Plan</button>
+    <button class="nav-tab" onclick="showPage('protocols',this)">Protocols</button>
+    <button class="nav-tab" onclick="showPage('sleep',this)">Sleep</button>
+    <button class="nav-tab" onclick="showPage('nutrition',this)">Nutrition</button>
+    <button class="nav-tab" onclick="showPage('whoop',this)">WHOOP</button>
+    <button class="nav-tab" onclick="showPage('log',this)">Daily Log</button>
+    <button class="nav-tab" onclick="showPage('summary',this)">Weekly Summary</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══ OVERVIEW ═══ -->
+<div id="page-overview" class="page active">
+  <div class="page-header">
+    <h1>WALSH <span>PERFORMANCE</span><br>SYSTEM</h1>
+    <p>Movement · Thermal · Red Light · Recovery · Sleep · Nutrition — starts Mon 5 May 2025</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-label">Current Weight</div><div class="stat-value accent">168–175</div><div class="stat-sub">lbs</div></div>
+    <div class="stat"><div class="stat-label">Target Weight</div><div class="stat-value">155–160</div><div class="stat-sub">lbs</div></div>
+    <div class="stat"><div class="stat-label">Fat to Lose</div><div class="stat-value">10–15</div><div class="stat-sub">lbs</div></div>
+    <div class="stat"><div class="stat-label">Timeframe</div><div class="stat-value">16–20</div><div class="stat-sub">weeks</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚙️ Equipment Stack</div>
+    <div class="equip-row"><div class="equip-icon">🔥</div><div><div class="equip-name">nurecover SaunaPro</div><div class="equip-spec">ThermaCore carbon heater · reaches 85°C (185°F) in ~20 min · portable pod · plugs standard outlet · dry/steam heat · no built-in light panels</div></div></div>
+    <div class="equip-row"><div class="equip-icon">💡</div><div><div class="equip-name">Red Light Panel — 660nm / 850nm (60 LED)</div><div class="equip-spec">Standalone unit · dual wavelength red + near infrared · full body and face · built-in timer · used as separate session or paired with sauna</div></div></div>
+    <div class="equip-row"><div class="equip-icon">❄️</div><div><div class="equip-name">Cold Plunge (mild) + Ocean + Cold Shower</div><div class="equip-spec">Ocean is primary (17–20°C, strongest stimulus) · plunge for convenience · cold shower = non-negotiable daily minimum</div></div></div>
+    <div class="equip-row"><div class="equip-icon">📊</div><div><div class="equip-name">WHOOP</div><div class="equip-spec">Recovery score gates training intensity · HRV + sleep staging · weekly review every Friday</div></div></div>
+    <div class="nbox"><strong>Sauna + Red Light — how they work together:</strong> Your nurecover delivers heat stimulus (cardiovascular adaptation, cortisol reduction, sleep priming). Your red light panel delivers photobiomodulation at 660/850nm (mitochondrial energy, inflammation, muscle recovery). Different mechanisms — use both. Best sequence: red light 10 min → sauna 25 min → cold shower 2 min.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">🎯 16-Week Phase Plan</div>
+    <div id="phase-display"></div>
+    <div style="display:grid;gap:10px;margin-top:16px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="background:rgba(232,255,71,0.12);border:1px solid var(--accent);border-radius:6px;padding:5px 10px;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--accent);white-space:nowrap;flex-shrink:0;">WK 1–4</div><div><strong style="font-size:13px;">Foundation</strong><br><span style="color:var(--muted);font-size:12px;">Beach bodyweight 3×/week. Cold shower daily. Sauna 2×/week. Red light 4×/week. Cut one fast food night. Build the habit only.</span></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="background:rgba(255,122,61,0.1);border:1px solid var(--accent2);border-radius:6px;padding:5px 10px;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--accent2);white-space:nowrap;flex-shrink:0;">WK 5–8</div><div><strong style="font-size:13px;">Expansion</strong><br><span style="color:var(--muted);font-size:12px;">Add BJJ 1×/week. Tighten lunch. Sauna 4×/week. Red light daily. 3-week calorie photo-log. Expect 2–4 lbs off.</span></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="background:rgba(77,184,255,0.1);border:1px solid var(--cold);border-radius:6px;padding:5px 10px;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--cold);white-space:nowrap;flex-shrink:0;">WK 9–12</div><div><strong style="font-size:13px;">Consolidation</strong><br><span style="color:var(--muted);font-size:12px;">BJJ 2×/week. Full stack locked. Add protein supplement if needed. First measurable body comp shift.</span></div></div>
+      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="background:rgba(74,222,128,0.1);border:1px solid var(--green);border-radius:6px;padding:5px 10px;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--green);white-space:nowrap;flex-shrink:0;">WK 13–16</div><div><strong style="font-size:13px;">Performance</strong><br><span style="color:var(--muted);font-size:12px;">Full rhythm. Re-assess body comp. Refine. This is identity now, not effort.</span></div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🏄 The Non-Negotiable Floor</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:10px;">When life collapses — hold this and continuity is never broken.</p>
+      <div class="hbox"><strong>01</strong> Cold shower every morning. 2 min. No exceptions.</div>
+      <div class="hbox"><strong>02</strong> Sauna minimum 2×/week. Even 20 min.</div>
+      <div class="hbox"><strong>03</strong> Red light panel minimum 3×/week. 10 min.</div>
+      <div class="hbox"><strong>04</strong> One ocean or beach session on the weekend.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ False Start Protocol</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:10px;">Relapses are built in. Here's the recovery.</p>
+      <table class="proto-table">
+        <tr><td>Miss 1 week</td><td style="color:var(--muted);">Next session. Don't restart — just continue.</td></tr>
+        <tr><td>Miss 2 weeks</td><td style="color:var(--muted);">One beach circuit this weekend. Breaks the gap.</td></tr>
+        <tr><td>Travel week</td><td style="color:var(--muted);">Hotel floor: push-ups, split squats, planks, 20 min. Cold shower daily.</td></tr>
+        <tr><td>5-min floor</td><td style="color:var(--muted);">10 push / 10 squat / 10 burpee × 3. Never fully stop.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WEEKLY PLAN ═══ -->
+<div id="page-week" class="page">
+  <div class="page-header"><h1>WEEKLY <span>PLAN</span></h1><p>Tap any day for full AM/PM detail</p></div>
+  <div class="week-grid" id="week-grid"></div>
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title">📋 Beach Bodyweight Circuit</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">40 min · No equipment · Steps from your front door</p>
+    <table class="proto-table">
+      <tr><th>Block</th><th>Exercise</th><th>Sets × Reps</th></tr>
+      <tr><td>Warm-up</td><td>Walk to waterline, 5 min mobility (hip circles, arm swings, thoracic rotation)</td><td>—</td></tr>
+      <tr><td>Push</td><td>Push-ups — standard → decline → archer as you progress</td><td>3 × max</td></tr>
+      <tr><td>Pull</td><td>Resistance band rows or towel rows on railing</td><td>3 × 12</td></tr>
+      <tr><td>Hinge</td><td>Single-leg Romanian deadlift bodyweight</td><td>3 × 10 each</td></tr>
+      <tr><td>Squat</td><td>Bulgarian split squat (use step or bench)</td><td>3 × 10 each</td></tr>
+      <tr><td>Core</td><td>Plank → side plank → hollow hold</td><td>3 × 30–45 sec</td></tr>
+      <tr><td>Finisher</td><td>5 rounds: 10 burpees + 20 sec sprint on sand</td><td>—</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PROTOCOLS ═══ -->
+<div id="page-protocols" class="page">
+  <div class="page-header"><h1>THERMAL &amp; LIGHT <span>PROTOCOLS</span></h1><p>nurecover SaunaPro · 660/850nm Red Light Panel · Cold plunge · Ocean · Cold shower</p></div>
+  <div class="card">
+    <div class="card-title" style="color:var(--rl);">💡 Red Light Panel — Protocol</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Sit 15–30cm from panel. 660nm targets skin and superficial tissue. 850nm penetrates deeper — muscle, joints, mitochondria. Both wavelengths active simultaneously on your unit.</p>
+    <table class="proto-table">
+      <tr><th>Goal</th><th>Timing</th><th>Duration</th><th>Notes</th></tr>
+      <tr><td>Sleep onset</td><td>30–60 min before bed</td><td>10–15 min</td><td>Red light signals melatonin. Dim room, no blue light after.</td></tr>
+      <tr><td>Post-workout recovery</td><td>After training or sauna</td><td>10–15 min</td><td>Reduces DOMS, accelerates repair. Sit close to panel.</td></tr>
+      <tr><td>Morning priming</td><td>While sauna heats up</td><td>8–10 min</td><td>Mitochondrial ATP. Good habit while waiting.</td></tr>
+      <tr><td>Face / skin</td><td>Any session</td><td>8–10 min</td><td>15–20cm. Collagen benefit is cumulative over weeks.</td></tr>
+      <tr><td>Joint / inflammation</td><td>Post-training or sore days</td><td>10–15 min</td><td>Target the area. NIR 850nm is the active wavelength.</td></tr>
+    </table>
+    <div class="hbox" style="margin-top:14px;"><strong>Best daily sequence:</strong> Red light panel 10 min → nurecover Sauna 25 min → Cold shower 2 min. ~40 min total. Stacks photobiomodulation, heat stimulus, and cold hormesis.</div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title" style="color:var(--heat);">🔥 nurecover SaunaPro</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Start it 20 min before you want to enter. Use that time for red light session.</p>
+      <table class="proto-table">
+        <tr><th>Goal</th><th>Temp</th><th>Duration</th></tr>
+        <tr><td>Recovery</td><td>75–80°C</td><td>25–35 min</td></tr>
+        <tr><td>Sleep prep</td><td>65–75°C</td><td>20–25 min</td></tr>
+        <tr><td>Longevity / cardio</td><td>80–85°C</td><td>25–35 min</td></tr>
+        <tr><td>Quick reset</td><td>70°C</td><td>15–20 min</td></tr>
+      </table>
+      <div class="nbox"><strong>Hydration:</strong> 500ml water before every session. Pod-style sauna produces a heavy sweat response. Exit if dizzy.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--cold);">❄️ Cold Exposure</div>
+      <table class="proto-table">
+        <tr><th>Option</th><th>Temp</th><th>Protocol</th></tr>
+        <tr><td>Ocean</td><td>17–20°C</td><td>3–5 min, submerge to neck</td></tr>
+        <tr><td>Plunge</td><td>Mild</td><td>3–5 min, convenience option</td></tr>
+        <tr><td>Cold shower</td><td>~15–18°C</td><td>2 min, daily minimum</td></tr>
+      </table>
+      <div class="hbox" style="margin-top:12px;"><strong>Shower protocol:</strong> Turn fully cold. Stay. 30 sec to settle breathing — next 90 sec is where norepinephrine accumulates. Don't rush.</div>
+      <div class="hbox"><strong>After plunge/ocean:</strong> Don't warm up immediately. Let body thermogenically recover 10 min — activates brown adipose tissue.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔁 Sequencing Rules</div>
+    <div class="grid-2">
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--rl);margin-bottom:6px;">Red Light → Heat → Cold (Full Stack)</div><p style="font-size:13px;color:var(--muted);">Red light primes mitochondria. Heat loads cardiovascular system. Cold closes the loop. HRV improvement is maximal with this sequence. ~45 min total.</p></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:6px;">Evening: Sauna → Cold → Bed</div><p style="font-size:13px;color:var(--muted);">Core temp drops post-sauna. Cold accelerates the drop. Melatonin onset advances significantly. Your strongest sleep intervention. 3+ nights/week shifts WHOOP scores within 2 weeks.</p></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--cold);margin-bottom:6px;">Cold Before Strength Training</div><p style="font-size:13px;color:var(--muted);">Morning cold shower on waking is fine — the gap before training is enough. Don't do cold plunge immediately pre-session. Cold after strength = fine.</p></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--heat);margin-bottom:6px;">Post-Late BJJ (after 9pm)</div><p style="font-size:13px;color:var(--muted);">Skip sauna — raises core temp and pushes sleep onset back. Cold shower only post-BJJ. Save sauna for the next day.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLEEP ═══ -->
+<div id="page-sleep" class="page">
+  <div class="page-header"><h1>SLEEP <span>PROTOCOL</span></h1><p>Optimised for high-stress CEO · 4 kids · travel variability</p></div>
+  <div class="card">
+    <div class="card-title" style="color:var(--purple);">🌙 Why Sleep Is Priority #1</div>
+    <p style="color:var(--muted);font-size:13px;line-height:1.7;">Poor sleep elevates cortisol → raises fasting glucose (your 102 reading is directly affected) → drives visceral fat storage → impairs cognitive performance. You cannot outwork bad sleep. Chronic restriction undoes every other intervention in this plan.</p>
+  </div>
+  <div class="section-label">Evening Wind-Down Stack</div>
+  <div class="lbox"><h4>9:00pm — Screens Off, Work Finished</h4><p>Blue light suppresses melatonin for 2–3 hours. Phone across the room. Non-negotiable.</p></div>
+  <div class="lbox"><h4>9:00–9:10pm — Red Light Panel (10–15 min)</h4><p>Dim room. Sit close to panel. Directly signals melatonin onset. Use this before sauna on evenings when you do both.</p></div>
+  <div class="lbox"><h4>9:10–9:35pm — Sauna (65–75°C, 20–25 min)</h4><p>Lower temp on sleep nights. The core temperature drop after the sauna is the mechanism. Don't go maximum heat — you want recovery heat, not performance heat.</p></div>
+  <div class="lbox"><h4>9:35pm — Cold Shower (2 min)</h4><p>Completes the core temp drop. Closes the sleep cycle. Don't skip this after sauna.</p></div>
+  <div class="lbox"><h4>9:35–10:00pm — Wind-Down</h4><ul><li>Dim all lights — no overhead</li><li>Magnesium glycinate 400mg</li><li>Room temp 18–20°C</li><li>Conversation, reading, or silence only</li></ul></div>
+  <div class="lbox"><h4>10:00–10:15pm — Lights Out Target</h4><p>You're naturally tired by 9pm — use it rather than overriding it with screens. 7–7.5 hrs in bed minimum.</p></div>
+  <div class="section-label">Morning Anchor</div>
+  <div class="lbox" style="border-left-color:var(--accent);"><h4>On Waking — Natural Light First, Cold Shower Within 10 Min</h4><p>Outside or open curtains immediately. Morning light sets circadian clock and anchors cortisol awakening response — directly improving sleep pressure the following night.</p></div>
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title">High-Stress Night Tools</div>
+    <table class="proto-table">
+      <tr><th>Tool</th><th>Protocol</th><th>Why</th></tr>
+      <tr><td>4-7-8 breath</td><td>Inhale 4 · hold 7 · exhale 8 · repeat 4×</td><td>Parasympathetic activation in under 2 min.</td></tr>
+      <tr><td>Body scan</td><td>Progressive muscle relaxation, feet to head, 10 min</td><td>Breaks cognitive loop physically.</td></tr>
+      <tr><td>Extend sauna</td><td>Add 10 min on high-stress nights</td><td>Heat shock proteins actively reduce cortisol.</td></tr>
+      <tr><td>Journal dump</td><td>3 things done + top priority tomorrow. 5 min max.</td><td>Offloads working memory, stops rumination.</td></tr>
+      <tr><td>Glycine</td><td>3g in water before bed on bad nights</td><td>Lowers core temp, improves sleep architecture.</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ NUTRITION ═══ -->
+<div id="page-nutrition" class="page">
+  <div class="page-header"><h1>NUTRITION <span>RULES</span></h1><p>No permanent calorie counting · 3 rules · 3-week calibration window · IF 16:8</p></div>
+  <div class="rbox"><div class="rbox-num">01</div><div class="rbox-title">Lunch is your controllable meal</div><div class="rbox-desc">When eating out for work: protein + vegetables, no bread, no fries, no sugary drinks. Grilled fish, salad with protein, sashimi, chicken + greens — every restaurant has a version. One better choice per lunch, every day, is the single highest-leverage nutritional habit you can build right now.</div></div>
+  <div class="rbox"><div class="rbox-num">02</div><div class="rbox-title">Cut fast food from twice to once per week</div><div class="rbox-desc">That single swap removes 1,000+ excess calories per week. Don't eliminate it — just halve it. One family takeout night is fine. Perfection is the enemy of consistency here.</div></div>
+  <div class="rbox"><div class="rbox-num">03</div><div class="rbox-title">Protein anchor at every dinner</div><div class="rbox-desc">Jen's cooking is already good — don't change it. Ensure dinner always includes substantial protein: fish, chicken, red meat 2–3×/week. Target 140–160g protein daily. At 48, muscle preservation while losing fat depends entirely on this. Protein is the one macronutrient you cannot afford to undercut.</div></div>
+  <div class="card">
+    <div class="card-title">3-Week Calorie Diagnostic (Weeks 5–7)</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Not permanent tracking — a calibration exercise. You'll build a mental model that persists after you stop.</p>
+    <table class="proto-table">
+      <tr><th>What to log</th><th>How</th><th>Frequency</th></tr>
+      <tr><td>Lunch</td><td>iPhone photo → Health app or Lose It</td><td>Every day</td></tr>
+      <tr><td>Takeout / fast food</td><td>Photo log</td><td>Every occurrence</td></tr>
+      <tr><td>Dinner</td><td>Best effort, not obsessive</td><td>3–4× / week</td></tr>
+    </table>
+    <div class="hbox" style="margin-top:14px;"><strong>Targets:</strong> Training days 1,800–2,000 kcal · Rest days 1,600–1,800 kcal · Protein 140–160g daily always</div>
+  </div>
+  <div class="card">
+    <div class="card-title">IF Protocol</div>
+    <p style="color:var(--muted);font-size:13px;">Your 16:8 skip-breakfast pattern is already working — keep it. Eating window: 12pm–8pm on commute days. <strong style="color:var(--text);">Do not extend beyond 16 hours</strong> — no additional benefit for your profile and risks muscle catabolism at this training volume.</p>
+  </div>
+</div>
+
+<!-- ═══ WHOOP ═══ -->
+<div id="page-whoop" class="page">
+  <div class="page-header"><h1>WHOOP <span>INTEGRATION</span></h1><p>Recovery score gates training intensity · Data drives decisions</p></div>
+  <div class="card">
+    <div class="card-title">Recovery Score → Training Decision</div>
+    <div class="whoop-row"><div class="wbadge wg">GRN</div><div class="wtext"><h4 style="color:var(--green);">Green · 67%+ · Full Protocol</h4><p>Execute the full planned session. Push the finisher. Full cold exposure. This is the day to train hard.</p></div></div>
+    <div class="whoop-row"><div class="wbadge wy">YLW</div><div class="wtext"><h4 style="color:var(--yellow);">Yellow · 34–66% · Modified</h4><p>Do the session, drop the finisher. Reduce sets by 1. Cold shower instead of ocean/plunge. Sauna focus over training volume.</p></div></div>
+    <div class="whoop-row"><div class="wbadge wr">RED</div><div class="wtext"><h4 style="color:var(--red);">Red · &lt;34% · Recovery Only</h4><p>Cold shower only. Evening sauna (20 min, low temp). No training. A red day trained hard becomes two red days. Sleep is the intervention.</p></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Metrics to Watch Weekly</div>
+      <table class="proto-table">
+        <tr><th>Metric</th><th>Signal</th></tr>
+        <tr><td>HRV trend</td><td>Rising = adaptation. Falling = overload or poor sleep.</td></tr>
+        <tr><td>RHR trend</td><td>Falling over weeks = cardiovascular improvement.</td></tr>
+        <tr><td>Sleep performance</td><td>Below 70% for 3+ consecutive days = intervention needed.</td></tr>
+        <tr><td>Strain vs recovery</td><td>Chronic imbalance = the data is telling you something.</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Thermal Impact on WHOOP</div>
+      <p style="color:var(--muted);font-size:13px;line-height:1.7;">Sauna temporarily elevates RHR during and after the session — WHOOP may read lower recovery the next morning if done late. Keep sauna sessions done by 9:30pm. Cold shower normalises HRV faster post-sauna. Consistent 4×/week habit produces rising HRV trend over 4–6 weeks.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Friday Morning WHOOP Review (5 min)</div>
+    <table class="proto-table">
+      <tr><td style="color:var(--accent);">HRV</td><td>Weekly average trending up, flat, or down vs last week?</td></tr>
+      <tr><td style="color:var(--accent);">Sleep</td><td>Average sleep performance — which nights were worst and why?</td></tr>
+      <tr><td style="color:var(--accent);">Strain</td><td>Did training days produce expected strain scores?</td></tr>
+      <tr><td style="color:var(--accent);">Recovery</td><td>How many green days this week? Target: minimum 4.</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ DAILY LOG ═══ -->
+<div id="page-log" class="page">
+  <div class="page-header"><h1>DAILY <span>LOG</span></h1><p>Quick check-in · Stored locally on this device · 90 days retained</p></div>
+  <div class="card">
+    <div class="card-title">Today's Check-In</div>
+    <div class="log-form">
+      <div class="log-row">
+        <div><label class="form-label">Date</label><input type="date" id="log-date"></div>
+        <div><label class="form-label">Weight (lbs)</label><input type="number" id="log-weight" placeholder="e.g. 171" step="0.1" min="100" max="300"></div>
+      </div>
+      <div class="log-row">
+        <div><label class="form-label">WHOOP Recovery (%)</label><input type="number" id="log-whoop" placeholder="e.g. 74" min="0" max="100"></div>
+        <div><label class="form-label">Sleep Last Night (hrs)</label><input type="number" id="log-sleep" placeholder="e.g. 7.2" step="0.1" min="0" max="24"></div>
+      </div>
+      <div>
+        <label class="form-label">Completed Today — tap to check off</label>
+        <div class="check-row" id="check-row"></div>
+      </div>
+      <div>
+        <label class="form-label">Energy Level (1–10): <span id="energy-val" style="color:var(--accent);font-family:'DM Mono',monospace;">7</span></label>
+        <input type="range" id="log-energy" min="1" max="10" value="7" oninput="document.getElementById('energy-val').textContent=this.value">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px;"><span>Low</span><span>High</span></div>
+      </div>
+      <div><label class="form-label">Notes (optional)</label><textarea id="log-notes" rows="2" placeholder="Stress level, how sleep felt, anything notable..."></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="saveLog()">Save Entry</button>
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="section-label">Recent Entries</div>
+  <div id="log-entries"></div>
+</div>
+
+<!-- ═══ WEEKLY SUMMARY ═══ -->
+<div id="page-summary" class="page">
+  <div class="page-header"><h1>WEEKLY <span>SUMMARY</span></h1><p>Auto-calculated from your daily logs · Navigate weeks with arrows</p></div>
+
+  <div class="week-nav">
+    <button onclick="changeWeek(-1)">&#8592; Prev</button>
+    <div class="wk-label" id="week-range-label">—</div>
+    <button onclick="changeWeek(1)">Next &#8594;</button>
+  </div>
+
+  <div class="stat-row" id="summary-stats"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Activity Compliance</div>
+      <div id="compliance-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚖️ Weight This Week</div>
+      <div id="weight-chart"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 WHOOP & Sleep Trend</div>
+    <div id="trend-chart"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💬 Week Summary</div>
+    <div id="week-narrative" style="font-size:13px;color:var(--muted);line-height:1.8;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 All Entries This Week</div>
+    <div id="week-entries"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ─── NAVIGATION ───
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'summary') renderSummary();
+}
+
+// ─── WEEKLY PLAN DATA ───
+const weekData = [
+  { day:'MON', type:'WFH · Full Protocol',
+    pills:[['p-train','🏃 Circuit'],['p-cold','🌊 Ocean/Cold'],['p-heat','🔥 Sauna'],['p-rl','💡 Red Light']],
+    am:['5:30–6:10am: Beach bodyweight circuit (40 min)','Ocean entry immediately post-workout — 3–5 min, submerge to neck','Back for coffee with Jen by 6:20am'],
+    pm:['Start sauna while doing red light panel (20 min preheat)','9:00pm: Red light panel 10 min (close to panel, dim room)','9:10pm: Sauna 25 min (Cardio/Recovery, 75–80°C)','9:35pm: Cold shower 2 min — critical for sleep','Lights out target 10:00–10:15pm'] },
+  { day:'TUE', type:'Commute · Abbreviated',
+    pills:[['p-cold','🚿 Cold shower'],['p-heat','🔥 Sauna 20min'],['p-sleep','😴 Sleep priority']],
+    am:['Cold shower on waking — 2 min, non-negotiable','Optional: 20 min beach walk if naturally awake by 5:30am'],
+    pm:['Evening: Sauna 20 min (Relaxation, 65–70°C)','Just get in — podcast or silence. Nervous system reset.','Cold shower after. Bed by 10pm.'] },
+  { day:'WED', type:'WFH · Full Protocol',
+    pills:[['p-train','🏃 Circuit'],['p-cold','🌊 Ocean/Cold'],['p-heat','🔥 Sauna'],['p-rl','💡 Red Light']],
+    am:['5:30–6:10am: Beach bodyweight circuit','Ocean or cold plunge post-workout 3–5 min','Longer session available most Wednesdays — use it'],
+    pm:['Best recovery day of the week','Red light panel 10 min → Sauna 30 min (full program) → Cold shower','Deliberate red light face exposure during panel session'] },
+  { day:'THU', type:'Commute · BJJ Night (Wk 5+)',
+    pills:[['p-cold','🚿 Cold shower'],['p-train','🥋 BJJ (wk5+)'],['p-rl','💡 Red Light']],
+    am:['Cold shower only on waking — 2 min','Sets dopamine tone for the day'],
+    pm:['BJJ 7:00–8:30pm from week 5 onwards','Post-BJJ: cold shower only — no sauna after 9pm (delays sleep)','Red light panel 10 min if back before 9pm','Non-BJJ Thursdays: Sauna 20 min + cold shower'] },
+  { day:'FRI', type:'Commute · End-of-Week Reset',
+    pills:[['p-cold','🚿 Cold shower'],['p-heat','🔥 Sauna 35min'],['p-rl','💡 Red Light']],
+    am:['Cold shower on waking — non-negotiable','WHOOP weekly review — 5 min before work'],
+    pm:['End-of-week recovery: Red light 10 min → Sauna 30–35 min (Detox/Cardio) → Cold shower','Sets you up for weekend energy','Note weight for weekly tracking'] },
+  { day:'SAT', type:'Surf · Active Recovery',
+    pills:[['p-surf','🏄 Surf'],['p-cold','🌊 Ocean'],['p-heat','🔥 Sauna (opt)'],['p-rl','💡 Red Light']],
+    am:['SURF. This is your weekend anchor — protect it','Ocean is cold exposure. Surfing = zone 2 + rotational core + shoulder stability','If no surf: 40 min beach walk + bodyweight circuit'],
+    pm:['Late morning: Red light panel 10–15 min (good skin session)','Optional sauna 20–25 min with Jen (2-person unit)','Family time priority — thermal is optional today'] },
+  { day:'SUN', type:'Rest · Passive Recovery',
+    pills:[['p-rest','🛋️ Full rest'],['p-heat','🔥 Sauna (opt)'],['p-rl','💡 Red Light'],['p-sleep','😴 Sleep priority']],
+    am:['No structured training. Cold shower still recommended.'],
+    pm:['Evening: Red light 10 min → Sauna 20 min (Relaxation) → Cold shower','Sunday evening sauna = Monday morning performance','Sets circadian rhythm for the week. Target 8 hrs in bed tonight.'] }
+];
+
+function buildWeek() {
+  const grid = document.getElementById('week-grid');
+  weekData.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'day-card';
+    el.innerHTML = `
+      <div class="day-name">${d.day}</div>
+      <div class="day-type">${d.type}</div>
+      <div>${d.pills.map(([cls,lbl]) => `<span class="pill ${cls}">${lbl}</span>`).join('')}</div>
+      <div class="day-detail" id="det-${i}">
+        <strong>Morning</strong><ul>${d.am.map(x=>`<li>${x}</li>`).join('')}</ul>
+        <strong>Evening</strong><ul>${d.pm.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>`;
+    el.addEventListener('click', () => {
+      const det = document.getElementById('det-'+i);
+      det.classList.toggle('show');
+      el.classList.toggle('expanded');
+    });
+    grid.appendChild(el);
+  });
+}
+
+// ─── PHASE BAR ───
+function buildPhase() {
+  const start = new Date('2025-05-05');
+  const today = new Date();
+  const diff = Math.floor((today - start) / (7*24*60*60*1000));
+  const week = Math.min(Math.max(diff + 1, 1), 16);
+  const phases = [{label:'Foundation',w:[1,2,3,4]},{label:'Expansion',w:[5,6,7,8]},{label:'Consolidation',w:[9,10,11,12]},{label:'Performance',w:[13,14,15,16]}];
+  const cur = phases.find(p => p.w.includes(week)) || {label:'Complete'};
+  document.getElementById('phase-display').innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Week <span style="color:var(--accent);font-family:'DM Mono',monospace;">${week}</span> of 16 · Phase: <span style="color:var(--accent);">${cur.label}</span></div>
+    <div class="phase-bar">${Array.from({length:16},(_,i)=>{const w=i+1;const c=w<week?'done':w===week?'active':'future';return `<div class="ps ${c}" title="Week ${w}"></div>`;}).join('')}</div>
+    <div class="phase-labels"><span>Wk 1</span><span>Wk 4</span><span>Wk 8</span><span>Wk 12</span><span>Wk 16</span></div>`;
+}
+
+// ─── CHECKBOX ITEMS ───
+const checkItems = [
+  {id:'beach',    label:'🏃 Beach circuit'},
+  {id:'ocean',    label:'🌊 Ocean/cold plunge'},
+  {id:'shower',   label:'🚿 Cold shower'},
+  {id:'sauna',    label:'🔥 Sauna'},
+  {id:'redlight', label:'💡 Red light'},
+  {id:'bjj',      label:'🥋 BJJ'},
+  {id:'surf',     label:'🏄 Surfed'},
+  {id:'lunch',    label:'🥗 Good lunch'},
+  {id:'screens',  label:'📵 Screens off 9pm'},
+  {id:'sleep7',   label:'😴 7+ hrs sleep'},
+];
+
+function buildCheckboxes() {
+  const row = document.getElementById('check-row');
+  row.innerHTML = '';
+  checkItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'check-btn';
+    btn.dataset.id = item.id;
+    btn.innerHTML = item.label;
+    btn.addEventListener('click', function() {
+      this.classList.toggle('checked');
+    });
+    row.appendChild(btn);
+  });
+}
+
+function getCheckedIds() {
+  return Array.from(document.querySelectorAll('#check-row .check-btn.checked')).map(b => b.dataset.id);
+}
+
+function getCheckedLabels() {
+  return Array.from(document.querySelectorAll('#check-row .check-btn.checked')).map(b => b.textContent.trim());
+}
+
+// ─── LOG ───
+function todayStr() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function saveLog() {
+  const date = document.getElementById('log-date').value;
+  if (!date) { alert('Please enter a date.'); return; }
+  const entry = {
+    date,
+    weight: document.getElementById('log-weight').value,
+    whoop:  document.getElementById('log-whoop').value,
+    sleep:  document.getElementById('log-sleep').value,
+    energy: document.getElementById('log-energy').value,
+    notes:  document.getElementById('log-notes').value,
+    checked: getCheckedIds()
+  };
+  const logs = getLogs();
+  // Replace if same date exists
+  const idx = logs.findIndex(l => l.date === date);
+  if (idx >= 0) logs[idx] = entry; else logs.unshift(entry);
+  logs.sort((a,b) => b.date.localeCompare(a.date));
+  localStorage.setItem('wps_logs', JSON.stringify(logs.slice(0, 90)));
+  clearForm();
+  renderLogs();
+}
+
+function getLogs() {
+  try { return JSON.parse(localStorage.getItem('wps_logs') || '[]'); } catch { return []; }
+}
+
+function clearForm() {
+  document.getElementById('log-date').value = todayStr();
+  document.getElementById('log-weight').value = '';
+  document.getElementById('log-whoop').value = '';
+  document.getElementById('log-sleep').value = '';
+  document.getElementById('log-notes').value = '';
+  document.getElementById('log-energy').value = 7;
+  document.getElementById('energy-val').textContent = '7';
+  document.querySelectorAll('#check-row .check-btn').forEach(b => b.classList.remove('checked'));
+}
+
+function deleteLog(date) {
+  if (!confirm('Delete entry for ' + date + '?')) return;
+  const logs = getLogs().filter(l => l.date !== date);
+  localStorage.setItem('wps_logs', JSON.stringify(logs));
+  renderLogs();
+}
+
+function scoreClass(whoop) {
+  if (!whoop) return '';
+  const n = parseInt(whoop);
+  return n >= 67 ? 'sg' : n >= 34 ? 'sy' : 'sr';
+}
+
+function labelFor(id) {
+  return (checkItems.find(c => c.id === id) || {label:id}).label;
+}
+
+function renderLogs() {
+  const container = document.getElementById('log-entries');
+  const logs = getLogs();
+  if (!logs.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No entries yet.<br>Log your first day above.</p></div>';
+    return;
+  }
+  container.innerHTML = logs.map(e => `
+    <div class="log-entry">
+      <div>
+        <div class="log-date">${e.date}</div>
+        ${e.weight ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;">${e.weight} lbs</div>` : ''}
+        ${e.sleep  ? `<div style="font-size:11px;color:var(--purple);margin-top:2px;">${e.sleep}h sleep</div>` : ''}
+      </div>
+      <div class="log-content">
+        <div style="font-size:13px;color:var(--text);">Energy: ${e.energy}/10${e.notes ? ' · ' + e.notes : ''}</div>
+        <div class="log-tags">${(e.checked||[]).map(id => `<span class="pill p-rest">${labelFor(id)}</span>`).join('')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        ${e.whoop ? `<div class="log-score ${scoreClass(e.whoop)}">${e.whoop}%</div>` : ''}
+        <button class="btn btn-danger" onclick="deleteLog('${e.date}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ─── WEEKLY SUMMARY ───
+let summaryWeekOffset = 0;
+
+function getWeekBounds(offset) {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + (offset * 7));
+  monday.setHours(0,0,0,0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23,59,59,999);
+  return { monday, sunday };
+}
+
+function fmtDate(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function fmtDisplay(d) {
+  return d.toLocaleDateString('en-AU', {day:'numeric',month:'short'});
+}
+
+function changeWeek(dir) {
+  summaryWeekOffset += dir;
+  renderSummary();
+}
+
+function renderSummary() {
+  const { monday, sunday } = getWeekBounds(summaryWeekOffset);
+  document.getElementById('week-range-label').textContent =
+    fmtDisplay(monday) + ' – ' + fmtDisplay(sunday);
+
+  const logs = getLogs().filter(l => l.date >= fmtDate(monday) && l.date <= fmtDate(sunday));
+
+  // ── Stats ──
+  const weights = logs.map(l => parseFloat(l.weight)).filter(v => !isNaN(v));
+  const whoops  = logs.map(l => parseInt(l.whoop)).filter(v => !isNaN(v));
+  const sleeps  = logs.map(l => parseFloat(l.sleep)).filter(v => !isNaN(v));
+  const energies= logs.map(l => parseInt(l.energy)).filter(v => !isNaN(v));
+
+  const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : '—';
+  const latest = weights.length ? weights[0].toFixed(1) : '—';
+
+  document.getElementById('summary-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Days Logged</div><div class="stat-value accent">${logs.length}</div><div class="stat-sub">of 7</div></div>
+    <div class="stat"><div class="stat-label">Latest Weight</div><div class="stat-value">${latest}</div><div class="stat-sub">lbs</div></div>
+    <div class="stat"><div class="stat-label">Avg WHOOP</div><div class="stat-value">${avg(whoops)}${whoops.length ? '%' : ''}</div><div class="stat-sub">recovery</div></div>
+    <div class="stat"><div class="stat-label">Avg Sleep</div><div class="stat-value">${avg(sleeps)}${sleeps.length ? 'h' : ''}</div><div class="stat-sub">per night</div></div>
+    <div class="stat"><div class="stat-label">Avg Energy</div><div class="stat-value">${avg(energies)}${energies.length ? '/10' : ''}</div><div class="stat-sub">self-rated</div></div>`;
+
+  // ── Compliance bars ──
+  const counts = {};
+  checkItems.forEach(c => counts[c.id] = 0);
+  logs.forEach(l => (l.checked||[]).forEach(id => { if(counts[id]!==undefined) counts[id]++; }));
+
+  const targets = {beach:3,ocean:3,shower:7,sauna:4,redlight:5,bjj:1,surf:1,lunch:5,screens:7,sleep7:7};
+  const colours = {beach:'var(--accent)',ocean:'var(--cold)',shower:'var(--cold)',sauna:'var(--heat)',redlight:'var(--rl)',bjj:'var(--accent)',surf:'#93c5fd',lunch:'var(--green)',screens:'var(--purple)',sleep7:'var(--purple)'};
+
+  document.getElementById('compliance-bars').innerHTML = checkItems.map(c => {
+    const n = counts[c.id];
+    const t = targets[c.id] || 7;
+    const pct = Math.min(Math.round((n/t)*100), 100);
+    const col = colours[c.id] || 'var(--accent)';
+    return `<div class="metric-row">
+      <div>
+        <div class="metric-name">${c.label}</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${col};"></div></div>
+      </div>
+      <div class="metric-count" style="margin-left:12px;min-width:50px;text-align:right;">${n} / ${t}</div>
+    </div>`;
+  }).join('');
+
+  // ── Weight chart ──
+  const wByDay = {};
+  logs.forEach(l => { if(l.weight) wByDay[l.date] = parseFloat(l.weight); });
+  const wDays = Object.keys(wByDay).sort();
+  if (wDays.length < 2) {
+    document.getElementById('weight-chart').innerHTML = `<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Log weight on multiple days to see chart</p>`;
+  } else {
+    const vals = wDays.map(d => wByDay[d]);
+    const mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1;
+    const barH = 60;
+    document.getElementById('weight-chart').innerHTML = `
+      <div style="display:flex;align-items:flex-end;gap:4px;height:${barH+24}px;padding:0 4px;">
+        ${wDays.map((d,i) => {
+          const h = Math.max(4, Math.round(((vals[i]-mn)/rng)*barH));
+          const trend = i>0 ? (vals[i]<vals[i-1]?'↓':'↑') : '';
+          const tcolour = trend==='↓'?'var(--green)':trend==='↑'?'var(--red)':'';
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <div style="font-size:9px;color:${tcolour||'transparent'};">${trend||'·'}</div>
+            <div style="font-size:9px;color:var(--muted);">${vals[i]}</div>
+            <div style="height:${h}px;width:100%;background:var(--accent);border-radius:3px 3px 0 0;opacity:0.8;"></div>
+            <div style="font-size:9px;color:var(--muted);white-space:nowrap;">${d.slice(5)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);">
+        ${wDays.length>=2 ? `Change this week: <span style="color:${vals[vals.length-1]<=vals[0]?'var(--green)':'var(--red)'};">${(vals[vals.length-1]-vals[0]).toFixed(1)} lbs</span>` : ''}
+      </div>`;
+  }
+
+  // ── WHOOP + Sleep trend ──
+  const sortedLogs = [...logs].sort((a,b) => a.date.localeCompare(b.date));
+  if (!sortedLogs.length) {
+    document.getElementById('trend-chart').innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Log WHOOP and sleep data to see trends</p>';
+  } else {
+    const days = sortedLogs.map(l => l.date.slice(5));
+    const wh = sortedLogs.map(l => parseInt(l.whoop)||null);
+    const sl = sortedLogs.map(l => parseFloat(l.sleep)||null);
+    const barH = 50;
+    document.getElementById('trend-chart').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:8px;">WHOOP Recovery %</div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:${barH+18}px;">
+            ${days.map((d,i) => {
+              const v = wh[i];
+              const h = v ? Math.max(3, Math.round((v/100)*barH)) : 3;
+              const c = !v?'var(--dim)':v>=67?'var(--green)':v>=34?'var(--yellow)':'var(--red)';
+              return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="font-size:9px;color:var(--muted);">${v||''}</div>
+                <div style="height:${h}px;width:100%;background:${c};border-radius:3px 3px 0 0;"></div>
+                <div style="font-size:9px;color:var(--muted);">${d}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:8px;">Sleep Hours</div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:${barH+18}px;">
+            ${days.map((d,i) => {
+              const v = sl[i];
+              const h = v ? Math.max(3, Math.round((v/10)*barH)) : 3;
+              const c = !v?'var(--dim)':v>=7?'var(--purple)':v>=6?'var(--yellow)':'var(--red)';
+              return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="font-size:9px;color:var(--muted);">${v||''}</div>
+                <div style="height:${h}px;width:100%;background:${c};border-radius:3px 3px 0 0;"></div>
+                <div style="font-size:9px;color:var(--muted);">${d}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── Narrative ──
+  const lines = [];
+  if (!logs.length) {
+    document.getElementById('week-narrative').innerHTML = '<span style="color:var(--muted);">No entries logged for this week yet. Start logging daily to see your summary here.</span>';
+  } else {
+    const trainDays = logs.filter(l => (l.checked||[]).includes('beach') || (l.checked||[]).includes('surf') || (l.checked||[]).includes('bjj')).length;
+    const saunaDays = logs.filter(l => (l.checked||[]).includes('sauna')).length;
+    const rlDays    = logs.filter(l => (l.checked||[]).includes('redlight')).length;
+    const coldDays  = logs.filter(l => (l.checked||[]).includes('shower') || (l.checked||[]).includes('ocean')).length;
+    const goodLunch = logs.filter(l => (l.checked||[]).includes('lunch')).length;
+    const screens   = logs.filter(l => (l.checked||[]).includes('screens')).length;
+    const avgW      = avg(whoops);
+    const avgS      = avg(sleeps);
+
+    if (trainDays >= 3) lines.push(`✅ <strong style="color:var(--green);">Training on track</strong> — ${trainDays} active sessions this week.`);
+    else lines.push(`⚠️ <strong style="color:var(--yellow);">Training light</strong> — ${trainDays} session${trainDays!==1?'s':''} this week. Target is 3+.`);
+
+    if (saunaDays >= 4) lines.push(`✅ <strong style="color:var(--green);">Sauna excellent</strong> — ${saunaDays} sessions. Cardiovascular adaptation is accumulating.`);
+    else if (saunaDays >= 2) lines.push(`🟡 <strong style="color:var(--yellow);">Sauna moderate</strong> — ${saunaDays} sessions. Target is 4+/week for full benefit.`);
+    else lines.push(`⚠️ <strong style="color:var(--red);">Sauna below minimum</strong> — ${saunaDays} sessions. Floor is 2/week.`);
+
+    if (rlDays >= 5) lines.push(`✅ <strong style="color:var(--green);">Red light consistent</strong> — ${rlDays} sessions this week.`);
+    else lines.push(`🟡 <strong style="color:var(--yellow);">Red light ${rlDays}/week</strong> — push toward daily for mitochondrial and recovery benefit.`);
+
+    if (coldDays >= 5) lines.push(`✅ <strong style="color:var(--green);">Cold exposure strong</strong> — ${coldDays} days. Norepinephrine and dopamine upregulation is real.`);
+    else lines.push(`🟡 Cold exposure ${coldDays} days — cold shower every morning is the non-negotiable minimum.`);
+
+    if (goodLunch >= 4) lines.push(`✅ <strong style="color:var(--green);">Lunch discipline strong</strong> — ${goodLunch} clean lunches this week.`);
+    else lines.push(`⚠️ <strong style="color:var(--yellow);">Lunch needs work</strong> — ${goodLunch} clean lunches. This is your primary nutrition lever.`);
+
+    if (screens >= 5) lines.push(`✅ <strong style="color:var(--green);">Screen curfew holding</strong> — ${screens} nights.`);
+    else lines.push(`🟡 Screen curfew ${screens} nights — aim for 9pm off daily to protect sleep onset.`);
+
+    if (whoops.length) {
+      const wa = parseFloat(avgW);
+      if (wa >= 67) lines.push(`✅ <strong style="color:var(--green);">WHOOP recovery averaging ${avgW}%</strong> — green zone. Body is adapting well.`);
+      else if (wa >= 50) lines.push(`🟡 <strong style="color:var(--yellow);">WHOOP recovery at ${avgW}%</strong> — yellow zone. Check sleep quality and training load balance.`);
+      else lines.push(`⚠️ <strong style="color:var(--red);">WHOOP recovery at ${avgW}%</strong> — red zone. Prioritise sleep and reduce training intensity.`);
+    }
+
+    if (sleeps.length) {
+      const sa = parseFloat(avgS);
+      if (sa >= 7) lines.push(`✅ <strong style="color:var(--green);">Sleep averaging ${avgS}h</strong> — on target. Evening protocol is working.`);
+      else if (sa >= 6) lines.push(`🟡 Sleep averaging ${avgS}h — slightly below target of 7h. Push lights-out earlier.`);
+      else lines.push(`⚠️ <strong style="color:var(--red);">Sleep averaging ${avgS}h</strong> — significantly below target. This is your most urgent intervention.`);
+    }
+
+    document.getElementById('week-narrative').innerHTML = lines.map(l => `<div style="margin-bottom:8px;">${l}</div>`).join('');
+  }
+
+  // ── Week entries ──
+  if (!logs.length) {
+    document.getElementById('week-entries').innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No entries this week.</p></div>';
+  } else {
+    document.getElementById('week-entries').innerHTML = logs.map(e => `
+      <div class="log-entry">
+        <div><div class="log-date">${e.date}</div>${e.weight?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">${e.weight} lbs</div>`:''}${e.sleep?`<div style="font-size:11px;color:var(--purple);margin-top:2px;">${e.sleep}h</div>`:''}</div>
+        <div class="log-content">
+          <div style="font-size:13px;color:var(--text);">Energy ${e.energy}/10${e.whoop?` · WHOOP ${e.whoop}%`:''}</div>
+          <div class="log-tags">${(e.checked||[]).map(id=>`<span class="pill p-rest">${labelFor(id)}</span>`).join('')}</div>
+          ${e.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">${e.notes}</div>`:''}
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ─── INIT ───
+buildWeek();
+buildPhase();
+buildCheckboxes();
+document.getElementById('log-date').value = todayStr();
+renderLogs();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW failed', e));
+  });
+}
+</script>
+</body>
+</html>
